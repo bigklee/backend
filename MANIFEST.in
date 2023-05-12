@@ -1,0 +1,3 @@
+graft kleenet/web/static
+graft kleenet/web/templates
+include kleenet/database/csvimport.db

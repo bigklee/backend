@@ -1,0 +1,1 @@
+from kleenet.models.artworks import Artwork, ArtworkCollection
