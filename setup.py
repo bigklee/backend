@@ -15,7 +15,7 @@ setup(
     license="GPLv3",
     author='Martin Obrist, Laurens Inauen',
     packages=find_packages(where='.', exclude=['tests', 'tasks']),
-    python_requires='>=3.11, <4',
+    python_requires='>=3.10, <4',
     include_package_data=True,
     setup_requires=['wheel'],
     install_requires=[
