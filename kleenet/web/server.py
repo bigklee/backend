@@ -4,9 +4,15 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
+
+from kleenet.web.routers import artwork_route
+from kleenet.database import DatabaseAccessor
 
 
 class KleenetServer:
+
+    GLOBAL_PREFIX = "/api/v1"
 
     @staticmethod
     def serve_from() -> tuple:
@@ -17,14 +23,26 @@ class KleenetServer:
         return templates, static
 
     def __init__(self):
+
         self.servepath = KleenetServer.serve_from()
         self.templates = Jinja2Templates(directory=self.servepath[0])
         self.app = FastAPI()
+        self.db = DatabaseAccessor()
         self._add_routers()
+        self.allow_cors()
+
+    def allow_cors(self):
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     def _add_routers(self):
         """Add all API routers"""
-        # self.app.include_router(redirect_route(), tags=["Redirect"])
+        self.app.include_router(artwork_route(self.db), tags=["Artworks"], prefix=KleenetServer.GLOBAL_PREFIX + "/artworks")
         self.app.mount("/static", StaticFiles(directory=self.servepath[1]), name="static")
 
     async def start(self):

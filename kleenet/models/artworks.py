@@ -22,15 +22,19 @@ class Artwork(BaseModel):
     def split_keywords(cls, v):
         if v is None:
             return None
-        val_list = v.split("/")
-        return val_list
+        if isinstance(v, str):
+            val_list = v.split("/")
+            return val_list
+        return v
 
     @validator("linked_works", always=True, pre=True)
     def split_linked_ids(cls, v):
         if v is None:
             return None
-        str_list = v.split("/")
-        return [int(i) for i in str_list]
+        if isinstance(v, str):
+            str_list = v.split("/")
+            return [int(i) for i in str_list]
+        return v
 
 
 class ArtworkCollection(BaseModel):
