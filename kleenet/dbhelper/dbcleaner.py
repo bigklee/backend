@@ -46,6 +46,14 @@ def extract_height(masse: str|None):
         return None
 
 
+def append_keywords(keylist: str, keyset: set[str]):
+    if keylist is None:
+        return
+    words = keylist.split("/")
+    for i in words:
+        if i != "":
+            keyset.add(i)
+
 if __name__ == "__main__":
 
     print(extract_height("48,5 x 40,5 cm"))
@@ -55,8 +63,22 @@ if __name__ == "__main__":
         con = sqlite3.connect("/home/dinu/git/bigklee/database/csvimport.db")
         con.row_factory = sqlite3.Row
         cur = con.cursor()
+        allkeys = set()
+        res = cur.execute("SELECT * FROM A_Kunstwerke")
+        for i in res:
+            append_keywords(i["Schlagworte"], allkeys)
+        listed_keys = list(allkeys)
+        listed_keys.sort()
+        for i in listed_keys:
+            cur.execute("INSERT INTO keywords VALUES (?)", (i,))
+        con.commit()
+
+    if False:
+        con = sqlite3.connect("/home/dinu/git/bigklee/database/csvimport.db")
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
         cur2 = con.cursor()
-        res = cur.execute("DELETE FROM artworks")
+        #res = cur.execute("DELETE FROM artworks")
         res = cur.execute("SELECT * FROM A_Kunstwerke")
         for i in res:
             cur2.execute(

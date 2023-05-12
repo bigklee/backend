@@ -2,7 +2,7 @@ import pathlib
 import sqlite3
 from pathlib import Path
 
-from kleenet.models import Artwork, ArtworkCollection
+from kleenet.models import Artwork, ArtworkCollection, Filters
 
 
 class DatabaseAccessor:
@@ -40,6 +40,7 @@ class DatabaseAccessor:
             query += "AND artist == ? "
             params += (artist,)
         if year is not None:
+
             query += "AND year == ? "
             params += (year,)
         if work_no is not None:
@@ -59,6 +60,12 @@ class DatabaseAccessor:
         if target_size - DatabaseAccessor.SIZE_EPSILON < size < target_size + DatabaseAccessor.SIZE_EPSILON:
             return True
         return False
+
+    @staticmethod
+    def _keyword_present(needle, haystack) -> bool:
+        if haystack is None:
+            return False
+        return needle in haystack
 
     def get_all(
             self,
@@ -94,10 +101,11 @@ class DatabaseAccessor:
         if width is not None:
             objects = list(filter(lambda x: self._check_size_contraint(x.width, width), objects))
         if keyword is not None:
-            objects = list(filter(lambda x: keyword in x.keywords, objects))
+            needles = keyword.split(",")
+            for j in needles:
+                objects = list(filter(lambda x: self._keyword_present(j, x.keywords), objects))
         if linked_work is not None:
             objects = list(filter(lambda x: linked_work in x.linked_works, objects))
-        pass
         return ArtworkCollection(__root__=objects)
 
     def get_by_id(self, id_: int) -> Artwork | None:
@@ -106,6 +114,16 @@ class DatabaseAccessor:
         if obj is None:
             return None
         return Artwork.parse_obj(obj)
+
+    def get_filters(self) -> Filters:
+        res = self.cursor.execute("SELECT * FROM keywords")
+        keywords = [i["keyword"] for i in res]
+        res = self.cursor.execute("SELECT year FROM artworks GROUP BY year")
+        years = [i["year"] for i in res if i["year"] is not None]
+        return Filters(keywords=keywords, years=years)
+
+    def get_collections(self):
+        pass
 
     def to_file(self, c: ArtworkCollection):
         p = Path("/tmp/exporttest.json")

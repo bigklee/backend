@@ -32,6 +32,7 @@ def artwork_route(db: DatabaseAccessor) -> APIRouter:
             linked_work,
             institution
         )
+        print(keyword)
         return collection
 
     @router.get("/{artwork_id}", responses={200: {"model": Artwork}, 404: {"model": SimpleMessage}} )

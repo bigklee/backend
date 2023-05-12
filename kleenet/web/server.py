@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
-from kleenet.web.routers import artwork_route
+from kleenet.web.routers import artwork_route, filters_route
 from kleenet.database import DatabaseAccessor
 
 
@@ -43,6 +43,7 @@ class KleenetServer:
     def _add_routers(self):
         """Add all API routers"""
         self.app.include_router(artwork_route(self.db), tags=["Artworks"], prefix=KleenetServer.GLOBAL_PREFIX + "/artworks")
+        self.app.include_router(filters_route(self.db), tags=["Filters"], prefix=KleenetServer.GLOBAL_PREFIX + "/filters")
         self.app.mount("/static", StaticFiles(directory=self.servepath[1]), name="static")
 
     async def start(self):
