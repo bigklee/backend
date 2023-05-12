@@ -2,7 +2,7 @@ import pathlib
 import sqlite3
 from pathlib import Path
 
-from kleenet.models import Artwork, ArtworkCollection, Filters
+from kleenet.models import Artwork, ArtworkCollection, Filters, Collection, CollectionList
 
 
 class DatabaseAccessor:
@@ -122,8 +122,36 @@ class DatabaseAccessor:
         years = [i["year"] for i in res if i["year"] is not None]
         return Filters(keywords=keywords, years=years)
 
-    def get_collections(self):
-        pass
+    def get_collections(self, collection_id: int | None = None):
+        if collection_id is None:
+            res = self.cursor.execute('''SELECT id, name, author FROM collections''')
+            collections = []
+            for i in res:
+                collections.append(Collection(collection_id=i["id"], name=i["name"], author=i["author"]))
+            return CollectionList(__root__=collections)
+        else:
+            res1 = self.cursor.execute("SELECT id, name, author FROM collections WHERE id=?", (collection_id,))
+            obj = res1.fetchone()
+            if obj is None:
+                return None
+            col_id = obj["id"]
+            col_name = obj["name"]
+            col_author = obj["author"]
+            res = self.cursor.execute('''
+                SELECT * FROM collections 
+                JOIN incollection ON collections.id=incollection.collection_id
+                JOIN artworks ON artworks.id=incollection.artwork_id
+                WHERE collections.id=?
+            ''', (collection_id,))
+            works = []
+            for i in res:
+                works.append(Artwork.parse_obj(i))
+            return Collection(
+                collection_id=col_id,
+                name=col_name,
+                author=col_author,
+                works=ArtworkCollection(__root__=works)
+            )
 
     def to_file(self, c: ArtworkCollection):
         p = Path("/tmp/exporttest.json")
@@ -133,5 +161,6 @@ class DatabaseAccessor:
 
 if __name__ == "__main__":
     db = DatabaseAccessor()
-    o = db.get_all()
-    db.to_file(o)
+    res = db.get_collections(2)
+    print(res)
+
