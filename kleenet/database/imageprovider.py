@@ -5,7 +5,7 @@ import random
 class ImageProvider:
 
     def __init__(self):
-        self.image_dir = Path("/home/sb/web/klee_images")
+        self.image_dir = Path("/home/sb/web/klee_images/images")
         # self.image_dir = Path("/home/dinu/Pictures/wallpaper")
         if self.image_dir.is_dir():
             self.images = [i for i in self.image_dir.iterdir() if i.is_file() and i.suffix == ".jpg"]
