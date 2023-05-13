@@ -9,10 +9,10 @@ class ImageProvider:
         # self.image_dir = Path("/home/dinu/Pictures/wallpaper")
         if self.image_dir.is_dir():
             self.images = [i for i in self.image_dir.iterdir() if i.is_file() and i.suffix == ".jpg"]
-        print(self.images)
+        else:
+            self.images = []
 
     def get_random(self) -> Path | None:
         if len(self.images) != 0:
-            file = random.choice(self.images)
-            return file
+            return random.choice(self.images)
         return None

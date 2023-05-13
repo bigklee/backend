@@ -22,6 +22,8 @@ def image_route(imgp: ImageProvider) -> APIRouter:
         if file is None:
             response.status_code = status.HTTP_404_NOT_FOUND
             return SimpleMessage.not_found()
-        return FileResponse(file)
+        resp = FileResponse(file)
+        resp.headers["Cache-Control"] = "no-cache"
+        return resp
 
     return router
