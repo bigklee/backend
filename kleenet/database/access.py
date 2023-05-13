@@ -145,7 +145,11 @@ class DatabaseAccessor:
             ''', (collection_id,))
             works = []
             for i in res:
-                works.append(Artwork.parse_obj(i))
+                print(dict(i))
+                dicti = dict(i)
+                dicti["id"] = dicti["artwork_id"]
+                print(dicti)
+                works.append(Artwork.parse_obj(dicti))
             return Collection(
                 collection_id=col_id,
                 name=col_name,
